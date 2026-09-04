@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "multiagent-init"
-version = "0.1.0"
+version = "0.1.1"
 description = "Interactive CLI for generating multi-agent AI project boilerplates."
 readme = "README.md"
 requires-python = ">=3.9"
