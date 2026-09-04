@@ -63,7 +63,7 @@ def agent_to_class(name: str) -> str:
     if not parts:
         return "Agent"
 
-    class_name = "".join(part[:1].upper() + part[1:] for part in parts)
+    class_name = "".join(part.capitalize() for part in parts)
 
     if class_name[0].isdigit():
         class_name = f"Agent{class_name}"
