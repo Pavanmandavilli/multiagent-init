@@ -9,7 +9,7 @@ description = "Interactive CLI for generating multi-agent AI project boilerplate
 readme = "README.md"
 requires-python = ">=3.9"
 license = {text = "MIT"}
-authors = [{name = "Your Name", email = "you@example.com"}]
+authors = [{name = "Pavan Sekhar Mandavilli", email = "pavanmandavilli2004@gmail.com"}]
 keywords = ["multi-agent", "agents", "ai", "scaffolding", "cli", "generator"]
 classifiers = [
   "Development Status :: 3 - Alpha",
@@ -23,9 +23,9 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/YOUR_USERNAME/multiagent-init"
-Repository = "https://github.com/YOUR_USERNAME/multiagent-init"
-Issues = "https://github.com/YOUR_USERNAME/multiagent-init/issues"
+Homepage = "https://github.com/Pavanmandavilli/multiagent-init"
+Repository = "https://github.com/Pavanmandavilli/multiagent-init"
+Issues = "https://github.com/Pavanmandavilli/multiagent-init/issues"
 
 [project.scripts]
 multiagent-init = "multiagent_init.cli:main"
