@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "multiagent-init"
+version = "0.1.0"
+description = "Interactive CLI for generating multi-agent AI project boilerplates."
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+authors = [{name = "Your Name", email = "you@example.com"}]
+keywords = ["multi-agent", "agents", "ai", "scaffolding", "cli", "generator"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only"
+]
+dependencies = [
+  "questionary>=2.0.0,<3.0.0"
+]
+
+[project.urls]
+Homepage = "https://github.com/YOUR_USERNAME/multiagent-init"
+Repository = "https://github.com/YOUR_USERNAME/multiagent-init"
+Issues = "https://github.com/YOUR_USERNAME/multiagent-init/issues"
+
+[project.scripts]
+multiagent-init = "multiagent_init.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]

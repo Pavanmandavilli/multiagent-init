@@ -1,0 +1,147 @@
+Metadata-Version: 2.4
+Name: multiagent-init
+Version: 0.1.0
+Summary: Interactive CLI for generating multi-agent AI project boilerplates.
+Author-email: Your Name <you@example.com>
+License: MIT
+Project-URL: Homepage, https://github.com/YOUR_USERNAME/multiagent-init
+Project-URL: Repository, https://github.com/YOUR_USERNAME/multiagent-init
+Project-URL: Issues, https://github.com/YOUR_USERNAME/multiagent-init/issues
+Keywords: multi-agent,agents,ai,scaffolding,cli,generator
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3 :: Only
+Requires-Python: >=3.9
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: questionary<3.0.0,>=2.0.0
+Dynamic: license-file
+
+# 🚀 MultiAgent Init
+
+Interactive CLI for generating a clean multi-agent AI project.
+
+## Install
+
+```bash
+pip install multiagent-init
+```
+
+## Run
+
+```bash
+multiagent-init
+```
+
+## Wizard
+
+The CLI asks for:
+
+1. Project name
+2. Framework
+3. Model provider
+4. Number of agents
+5. Default or custom agents
+6. Optional tools
+7. Optional tests
+8. Optional Docker
+
+### Example
+
+```text
+🚀 MultiAgent Init
+
+? Project name: research-team
+
+? Select a framework:
+❯ Basic
+  LangGraph
+  CrewAI
+  AutoGen
+
+? Select model provider:
+❯ OpenAI
+  Anthropic
+  Google
+
+? Number of agents:
+❯ 3
+  2
+  4
+  5
+  Custom
+
+? Agent configuration:
+❯ Default agents
+  Custom agents
+
+? Agent 1 name: Market Researcher
+? Agent 2 name: Data Analyst
+? Agent 3 name: Report Writer
+
+? Include tools? Yes
+? Include tests? Yes
+? Include Docker? No
+
+Creating project...
+
+✓ Agents
+✓ Workflow
+✓ Tools
+✓ Configuration
+✓ Tests
+✓ README
+
+🎉 Done!
+```
+
+## Generated project
+
+Custom agent names are converted into safe Python filenames and class names.
+
+Example:
+
+```text
+Market Researcher → market_researcher.py → MarketResearcherAgent
+Data Analyst      → data_analyst.py      → DataAnalystAgent
+Report Writer     → report_writer.py     → ReportWriterAgent
+```
+
+## Development
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -e .
+python -m unittest discover -s tests -v
+```
+
+Build:
+
+```bash
+python -m pip install --upgrade build
+python -m build
+```
+
+## Publish
+
+TestPyPI:
+
+```bash
+python -m pip install --upgrade twine
+python -m twine upload --repository testpypi dist/*
+```
+
+PyPI:
+
+```bash
+python -m twine upload dist/*
+```
+
+For CI/CD, configure PyPI Trusted Publishing with GitHub Actions.
+
+## License
+
+MIT

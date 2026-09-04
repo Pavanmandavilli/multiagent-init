@@ -1,0 +1,2 @@
+[console_scripts]
+multiagent-init = multiagent_init.cli:main

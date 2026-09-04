@@ -1,0 +1,16 @@
+LICENSE
+README.md
+pyproject.toml
+src/multiagent_init/__init__.py
+src/multiagent_init/cli.py
+src/multiagent_init/generator.py
+src/multiagent_init/templates_data.py
+src/multiagent_init/wizard.py
+src/multiagent_init.egg-info/PKG-INFO
+src/multiagent_init.egg-info/SOURCES.txt
+src/multiagent_init.egg-info/dependency_links.txt
+src/multiagent_init.egg-info/entry_points.txt
+src/multiagent_init.egg-info/requires.txt
+src/multiagent_init.egg-info/top_level.txt
+tests/test_generator.py
+tests/test_wizard.py
