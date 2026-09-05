@@ -18,7 +18,7 @@ def main() -> int:
         print()
         print(f"  cd {destination.name}")
         print("  python3 -m venv .venv")
-        print("  source .venv/bin/activate  # macOS/Linux")
+        print("  source .venv/bin/activate")
         print("  pip install .")
         print("  python main.py")
         print()
