@@ -8,9 +8,7 @@ name = "{{PROJECT_NAME}}"
 version = "0.1.0"
 description = "A multi-agent AI application."
 requires-python = ">=3.9"
-dependencies = [
-  "{{PROVIDER_DEPENDENCY}}",
-]
+dependencies = []
 
 [tool.setuptools]
 package-dir = {"" = "src"}
@@ -29,7 +27,6 @@ description = "A LangGraph multi-agent AI application."
 requires-python = ">=3.9"
 dependencies = [
   "langgraph>=0.2",
-  "{{PROVIDER_DEPENDENCY}}",
 ]
 
 [tool.setuptools]
@@ -68,7 +65,6 @@ description = "An AutoGen multi-agent AI application."
 requires-python = ">=3.9"
 dependencies = [
   "autogen-agentchat>=0.4",
-  "{{PROVIDER_DEPENDENCY}}",
 ]
 
 [tool.setuptools]
@@ -85,25 +81,9 @@ PROVIDER_ENV_VARS = {
     "google": "GOOGLE_API_KEY",
 }
 
-# Raw pip dependency needed to talk to each provider's SDK directly
-# (used by the basic/langgraph/autogen agent wiring below).
-PROVIDER_DEPENDENCIES = {
-    "openai": "openai>=1.40",
-    "anthropic": "anthropic>=0.34",
-    "google": "google-genai>=0.3",
-}
-
-# A sensible default model per provider, so a freshly generated project
-# can make a real call without the user having to look up a model id first.
-PROVIDER_DEFAULT_MODELS = {
-    "openai": "gpt-4o-mini",
-    "anthropic": "claude-3-5-sonnet-20241022",
-    "google": "gemini-1.5-flash",
-}
-
 CONFIG_TEMPLATE = """import os
 
-MODEL_NAME = os.getenv("MODEL_NAME", "{{DEFAULT_MODEL}}")
+MODEL_NAME = os.getenv("MODEL_NAME", "your-model")
 {{PROVIDER_ENV_VAR}} = os.getenv("{{PROVIDER_ENV_VAR}}")
 
 
@@ -116,81 +96,73 @@ def validate() -> None:
         )
 """
 
-# ---------------------------------------------------------------------------
-# Building blocks for wiring a real LLM call into the "basic" / "langgraph" /
-# "autogen" agent templates. The generator places PROVIDER_CLIENT_IMPORTS at
-# the top of the file (with the other imports) and PROVIDER_CLIENT_INIT /
-# PROVIDER_CALL_SNIPPETS inside the method body (8 spaces = class body +
-# method body) - no imports ever live inline in the code.
-# ---------------------------------------------------------------------------
+AGENT_TEMPLATES = {
+    "basic": """class {{AGENT_CLASS}}:
+    \"\"\"{{AGENT_NAME}} agent.\"\"\"
 
-PROVIDER_CLIENT_IMPORTS = {
-    "openai": "from openai import OpenAI",
-    "anthropic": "from anthropic import Anthropic",
-    "google": "from google import genai",
+    name = "{{AGENT_NAME}}"
+
+    def run(self, task: str) -> str:
+        # TODO: connect this agent to your LLM/framework.
+        return f"[{{AGENT_NAME}}] Completed: {task}"
+""",
+    "langgraph": """class {{AGENT_CLASS}}:
+    \"\"\"{{AGENT_NAME}} node.\"\"\"
+
+    name = "{{AGENT_NAME}}"
+
+    def run(self, task: str) -> str:
+        # TODO: connect this node to your LLM/framework.
+        return f"[{{AGENT_NAME}}] Completed: {task}"
+
+    def __call__(self, state: dict) -> dict:
+        \"\"\"LangGraph node entry point - transforms and returns the graph state.\"\"\"
+        state["result"] = self.run(state["task"])
+        state["task"] = state["result"]
+        return state
+""",
+    "crewai": """from crewai import Agent
+
+
+class {{AGENT_CLASS}}:
+    \"\"\"{{AGENT_NAME}} agent.\"\"\"
+
+    name = "{{AGENT_NAME}}"
+
+    def __init__(self) -> None:
+        self.agent = Agent(
+            role="{{AGENT_NAME}}",
+            goal="Complete tasks assigned to the {{AGENT_NAME}} role.",
+            backstory="An AI agent specialized in {{AGENT_NAME}} tasks.",
+            # TODO: configure an LLM, e.g. llm="gpt-4o-mini".
+            allow_delegation=False,
+        )
+
+    def run(self, task: str) -> str:
+        # TODO: wrap `task` in a crewai.Task and execute it via a Crew.
+        return f"[{{AGENT_NAME}}] Completed: {task}"
+""",
+    "autogen": """from autogen_agentchat.agents import AssistantAgent
+
+
+class {{AGENT_CLASS}}:
+    \"\"\"{{AGENT_NAME}} agent.\"\"\"
+
+    name = "{{AGENT_NAME}}"
+
+    def build(self, model_client) -> AssistantAgent:
+        \"\"\"Build a real AutoGen AssistantAgent once you have a model client.\"\"\"
+        return AssistantAgent(
+            name="{{AGENT_NAME}}",
+            model_client=model_client,
+            system_message="You are the {{AGENT_NAME}} agent.",
+        )
+
+    def run(self, task: str) -> str:
+        # TODO: connect this agent to your LLM/framework.
+        return f"[{{AGENT_NAME}}] Completed: {task}"
+""",
 }
-
-PROVIDER_CLIENT_INIT = {
-    "openai": "        client = OpenAI(api_key=config.OPENAI_API_KEY)\n",
-    "anthropic": "        client = Anthropic(api_key=config.ANTHROPIC_API_KEY)\n",
-    "google": "        client = genai.Client(api_key=config.GOOGLE_API_KEY)\n",
-}
-
-# Uses a locally-scoped `client` and `prompt`. {{AGENT_NAME}} is substituted
-# by the generator before use.
-PROVIDER_CALL_SNIPPETS = {
-    "openai": (
-        "        response = client.chat.completions.create(\n"
-        "            model=config.MODEL_NAME,\n"
-        "            messages=[\n"
-        '                {"role": "system", "content": "You are the {{AGENT_NAME}} agent."},\n'
-        '                {"role": "user", "content": prompt},\n'
-        "            ],\n"
-        "        )\n"
-        "        return response.choices[0].message.content\n"
-    ),
-    "anthropic": (
-        "        response = client.messages.create(\n"
-        "            model=config.MODEL_NAME,\n"
-        "            max_tokens=1024,\n"
-        '            system="You are the {{AGENT_NAME}} agent.",\n'
-        '            messages=[{"role": "user", "content": prompt}],\n'
-        "        )\n"
-        "        return response.content[0].text\n"
-    ),
-    "google": (
-        "        response = client.models.generate_content(\n"
-        "            model=config.MODEL_NAME,\n"
-        '            contents=f"You are the {{AGENT_NAME}} agent.\\n\\n{prompt}",\n'
-        "        )\n"
-        "        return response.text\n"
-    ),
-}
-
-# WebSearchTool is imported at the top of the file by the generator.
-TOOL_SEARCH_SNIPPET = (
-    "        results = WebSearchTool().search(task)\n"
-    '        prompt = f"{task}\\n\\nRelevant search results:\\n{results}"\n'
-)
-
-NO_TOOL_SNIPPET = "        prompt = task\n"
-
-# ---------------------------------------------------------------------------
-# CrewAI / AutoGen wire the LLM through their own framework abstractions
-# instead of a raw provider SDK call, so they only need a tool wrapper.
-# The generator prepends the required imports (WebSearchTool, `tool`) itself.
-# ---------------------------------------------------------------------------
-
-CREWAI_TOOL_WRAPPER = '''@tool("Web Search")
-def web_search_tool(query: str) -> str:
-    """Search the web for the given query."""
-    return WebSearchTool().search(query)
-'''
-
-AUTOGEN_TOOL_WRAPPER = '''def web_search(query: str) -> str:
-    """Search the web for the given query."""
-    return WebSearchTool().search(query)
-'''
 
 ORCHESTRATOR_TEMPLATES = {
     "basic": """from __future__ import annotations
@@ -223,6 +195,51 @@ class Orchestrator:
                 raise AgentExecutionError(f"Agent '{agent.name}' failed: {exc}") from exc
 
         return current
+""",
+    "langgraph": """from __future__ import annotations
+
+import logging
+
+from langgraph.graph import END, START, StateGraph
+
+logger = logging.getLogger(__name__)
+
+
+class AgentExecutionError(RuntimeError):
+    \"\"\"Raised when the LangGraph execution fails.\"\"\"
+
+
+class Orchestrator:
+    \"\"\"LangGraph-based sequential multi-agent orchestrator.\"\"\"
+
+    def __init__(self, agents):
+        self.agents = list(agents)
+        self.graph = self._build_graph()
+
+    def _build_graph(self):
+        graph = StateGraph(dict)
+
+        previous = START
+        for index, agent in enumerate(self.agents):
+            node_id = f"node_{index}"
+            graph.add_node(node_id, agent)
+            graph.add_edge(previous, node_id)
+            previous = node_id
+
+        graph.add_edge(previous, END)
+
+        return graph.compile()
+
+    def run(self, task: str) -> str:
+        logger.info("Invoking LangGraph with %d node(s)", len(self.agents))
+
+        try:
+            final_state = self.graph.invoke({"task": task, "result": ""})
+        except Exception as exc:
+            logger.exception("LangGraph execution failed")
+            raise AgentExecutionError(f"LangGraph execution failed: {exc}") from exc
+
+        return final_state["result"]
 """,
     "crewai": """from __future__ import annotations
 
@@ -319,134 +336,6 @@ class Orchestrator:
 """,
 }
 
-# LangGraph is the one framework where "how agents are wired together" is a
-# real architectural choice, so it gets its own orchestrator per style
-# instead of a single fixed one.
-LANGGRAPH_ORCHESTRATOR_TEMPLATES = {
-    "sequential": """from __future__ import annotations
-
-import logging
-
-from langgraph.graph import END, START, StateGraph
-
-logger = logging.getLogger(__name__)
-
-
-class AgentExecutionError(RuntimeError):
-    \"\"\"Raised when the LangGraph execution fails.\"\"\"
-
-
-class Orchestrator:
-    \"\"\"LangGraph-based sequential multi-agent orchestrator.
-
-    Agents run one after another in a fixed pipeline: node_0 -> node_1 -> ...
-    \"\"\"
-
-    def __init__(self, agents):
-        self.agents = list(agents)
-        self.graph = self._build_graph()
-
-    def _build_graph(self):
-        graph = StateGraph(dict)
-
-        previous = START
-        for index, agent in enumerate(self.agents):
-            node_id = f"node_{index}"
-            graph.add_node(node_id, agent)
-            graph.add_edge(previous, node_id)
-            previous = node_id
-
-        graph.add_edge(previous, END)
-
-        return graph.compile()
-
-    def run(self, task: str) -> str:
-        logger.info("Invoking LangGraph with %d node(s) (sequential)", len(self.agents))
-
-        try:
-            final_state = self.graph.invoke({"task": task, "result": ""})
-        except Exception as exc:
-            logger.exception("LangGraph execution failed")
-            raise AgentExecutionError(f"LangGraph execution failed: {exc}") from exc
-
-        return final_state["result"]
-""",
-    "dynamic": """from __future__ import annotations
-
-import logging
-
-from langgraph.graph import END, START, StateGraph
-
-logger = logging.getLogger(__name__)
-
-
-class AgentExecutionError(RuntimeError):
-    \"\"\"Raised when the LangGraph execution fails.\"\"\"
-
-
-class Orchestrator:
-    \"\"\"LangGraph-based dynamic multi-agent orchestrator.
-
-    Instead of a fixed pipeline, every agent routes back through a
-    `supervisor` node that decides which agent runs next (or whether to
-    finish) via `add_conditional_edges`. Customize `_route` below to make
-    that decision from the task, the latest result, an LLM call, etc.
-    \"\"\"
-
-    def __init__(self, agents):
-        self.agents = list(agents)
-        self._node_ids = [f"node_{index}" for index in range(len(self.agents))]
-        self.graph = self._build_graph()
-
-    def _build_graph(self):
-        graph = StateGraph(dict)
-
-        for node_id, agent in zip(self._node_ids, self.agents):
-            graph.add_node(node_id, agent)
-            graph.add_edge(node_id, "supervisor")
-
-        graph.add_node("supervisor", self._supervisor)
-        graph.add_edge(START, "supervisor")
-
-        path_map = {node_id: node_id for node_id in self._node_ids}
-        path_map["FINISH"] = END
-        graph.add_conditional_edges("supervisor", self._route, path_map)
-
-        return graph.compile()
-
-    def _supervisor(self, state: dict) -> dict:
-        \"\"\"Does no work itself - `_route` reads the state it returns to
-        decide which agent runs next.\"\"\"
-        return state
-
-    def _route(self, state: dict) -> str:
-        \"\"\"Pick the next agent node to run, or 'FINISH'.
-
-        TODO: replace this with your real routing logic (e.g. inspect
-        `state["result"]`, branch on task type, ask an LLM which agent
-        should go next...). The default below just runs every agent once,
-        in order, then finishes.
-        \"\"\"
-        completed = state.get("completed", 0)
-
-        if completed < len(self._node_ids):
-            return self._node_ids[completed]
-
-        return "FINISH"
-
-    def run(self, task: str) -> str:
-        logger.info("Invoking LangGraph with %d agent(s) (dynamic routing)", len(self.agents))
-
-        try:
-            final_state = self.graph.invoke({"task": task, "result": "", "completed": 0})
-        except Exception as exc:
-            logger.exception("LangGraph execution failed")
-            raise AgentExecutionError(f"LangGraph execution failed: {exc}") from exc
-
-        return final_state["result"]
-""",
-}
-
 TOOL_FILE = """class WebSearchTool:
     \"\"\"Placeholder for a web-search integration.\"\"\"
 
@@ -460,7 +349,8 @@ TEST_TEMPLATE = """import unittest
 
 
 class AgentTests(unittest.TestCase):
-    def test_agents_have_expected_names(self):
+    def test_agents_return_output(self):
+        task = "test task"
 {{ASSERTIONS}}
 
 

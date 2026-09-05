@@ -79,24 +79,6 @@ def run_wizard() -> dict:
         style=STYLE,
     ).ask()
 
-    langgraph_orchestration = "sequential"
-
-    if framework == "langgraph":
-        langgraph_orchestration = questionary.select(
-            "LangGraph orchestration:",
-            choices=[
-                questionary.Choice("Sequential (fixed pipeline)", value="sequential"),
-                questionary.Choice(
-                    "Dynamic (supervisor decides the next agent)", value="dynamic"
-                ),
-            ],
-            default="sequential",
-            style=STYLE,
-        ).ask()
-
-        if langgraph_orchestration is None:
-            raise KeyboardInterrupt
-
     provider = questionary.select(
         "Select model provider:",
         choices=[
@@ -183,7 +165,6 @@ def run_wizard() -> dict:
     return {
         "project_name": project_name.strip(),
         "framework": framework,
-        "langgraph_orchestration": langgraph_orchestration,
         "provider": provider,
         "agent_count": agent_count,
         "agent_mode": agent_mode,

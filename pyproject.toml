@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "multiagent-init"
-version = "0.1.2"
+version = "0.1.1"
 description = "Interactive CLI for generating multi-agent AI project boilerplates."
 readme = "README.md"
 requires-python = ">=3.9"
@@ -12,7 +12,7 @@ license = {text = "MIT"}
 authors = [{name = "Pavan Sekhar Mandavilli", email = "pavanmandavilli2004@gmail.com"}]
 keywords = ["multi-agent", "agents", "ai", "scaffolding", "cli", "generator"]
 classifiers = [
-  "Development Status :: 5 - Production/Stable",
+  "Development Status :: 3 - Alpha",
   "Intended Audience :: Developers",
   "License :: OSI Approved :: MIT License",
   "Programming Language :: Python :: 3",
